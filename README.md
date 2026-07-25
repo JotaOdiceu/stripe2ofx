@@ -1,23 +1,46 @@
-Disclaimer: recent changes to Stripe's export process have broken this project.  Anyone wishing to use this code will have to fix it.  Look at the WIP-updates branch for initial work that has been done, and check out the issue tracker for the correct formulas to compute the right sums of the fees, charges/etc.
+# Stripe 2 OFX
 
-# Stripe 2 OFX #
+A command-line utility that converts [Stripe](https://stripe.com) balance history and transfer exports (CSV) to the [OFX](https://en.wikipedia.org/wiki/Open_Financial_Exchange) file format commonly used by accounting software for statement imports.
 
-A small command line utility that converts the [Stripe](http://stripe.com) transfer exports  (CSV) to the [OFX](http://en.wikipedia.org/wiki/Open_Financial_Exchange) file format often used by accounting software for bank statement imports.
+## Features
 
-## What exactly does it do? ##
-For each charge transaction:
+- **Modern & Legacy Stripe CSV Support**: Compatible with both modern `balance_history.csv` exports (`Created (UTC)`, `Fee`, `Currency`) and legacy exports (`Date`, `Fees`, `Amount`).
+- **ES Modules**: Refactored for modern Node.js (ESM).
+- **Automated Fee & Transaction Splitting**:
+  - Creates transaction entries for charges, refunds, and adjustments.
+  - Generates separate fee entries when Stripe fees are present.
+  - Automatically appends a final transfer transaction matching the net balance summary.
 
-- It creates a credit transaction for the charged amount
-- It creates a debit transaction for the fees
+## Usage
 
-For each refund transaction:
+### Prerequisites
 
-- It creates a debit transaction for the refunded amount
-- It creates a credit transaction for the refunded fees
+- Node.js (v18+)
 
-At the end it creates a transfer of the whole net value to your bank account.
+### Installation
 
-## What's this good for? ##
-It lets you treat your Stripe account as if it was a real bank account in your accounting software and reconcile the individual transactions against invoices, credit notes, and bank fees.
+```bash
+npm install
+```
 
-When the money gets deposited into your bank account as a lump sum you can explain the transaction as a transfer from your "Stripe account".
+### Running
+
+```bash
+node stripe2ofx.js <input-csv-file> [output-ofx-file]
+```
+
+#### Example
+
+```bash
+node stripe2ofx.js balance_history.csv stripe_export.ofx
+```
+
+If no output filename is specified, the output defaults to `output.ofx`.
+
+## About
+
+Fork of [nordbergm/stripe2ofx](https://github.com/nordbergm/stripe2ofx).
+
+## License
+
+[BSD-3-Clause](LICENSE)
