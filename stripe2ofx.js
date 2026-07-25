@@ -105,17 +105,14 @@ function processTransactions(data) {
     }
   }
 
-  const transferDate = moment(endDate).add(7, 'days');
-
   console.log(`Start Date:\t\t${startDate.format('YYYY-MM-DD')}`);
   console.log(`End Date:\t\t${endDate.format('YYYY-MM-DD')}`);
-  console.log(`Transfer Date:\t${transferDate.format('YYYY-MM-DD')}`);
 
-  return { currency, total, startDate, endDate, transferDate };
+  return { currency, total, startDate, endDate };
 }
 
 function generateOfx(data, meta) {
-  const { currency, total, startDate, endDate, transferDate } = meta;
+  const { currency, startDate, endDate } = meta;
   const lines = [];
 
   lines.push(
@@ -193,14 +190,6 @@ function generateOfx(data, meta) {
   }
 
   lines.push(
-    '\t\t\t\t\t\t<STMTTRN>\n',
-    '\t\t\t\t\t\t\t<TRNTYPE>XFER\n',
-    `\t\t\t\t\t\t\t<DTPOSTED>${formatDate(transferDate)}\n`,
-    `\t\t\t\t\t\t\t<TRNAMT>${(total * -1).toFixed(2)}\n`,
-    `\t\t\t\t\t\t\t<FITID>T${formatDate(transferDate)}\n`,
-    `\t\t\t\t\t\t\t<CHECKNUM>T${formatDate(transferDate)}\n`,
-    '\t\t\t\t\t\t\t<MEMO>Transfer to Bank Account\n',
-    '\t\t\t\t\t\t</STMTTRN>\n',
     '\t\t\t\t\t</BANKTRANLIST>\n',
     '\t\t\t\t</STMTRS>\n',
     '\t\t</STMTTRNRS>\n',
