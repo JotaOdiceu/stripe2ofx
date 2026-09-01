@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from 'node:fs';
 import { parse } from 'csv-parse/sync';
 import moment from 'moment';
