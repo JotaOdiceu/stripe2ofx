@@ -49,6 +49,23 @@ function getFees(data, rowIndex) {
   }
 }
 
+function getId(data, rowIndex) {
+  try {
+    const id = getCell(data, data[rowIndex], [
+      'balance_transaction_id',
+      'Balance Transaction ID',
+      'id',
+      'ID',
+      'Source ID',
+      'source_id'
+    ]);
+    if (id) return id;
+  } catch {
+    // fall through to synthetic id below
+  }
+  return null;
+}
+
 function getDate(data, rowIndex) {
   const rawDate = getCell(data, data[rowIndex], ['Created (UTC)', 'Created', 'Date', 'Available On (UTC)']);
   return moment(rawDate);
@@ -158,20 +175,23 @@ function generateOfx(data, meta) {
     }
 
     const date = getDate(data, i);
-    const id = `${date.format('YYYYMMDDHHmm')}${i}`;
+    const resolvedId = getId(data, i);
+    const id = resolvedId || `${date.format('YYYYMMDDHHmm')}${i}`;
     const amount = getAmount(data, i);
     const fees = getFees(data, i) * -1;
     const type = getCell(data, data[i], ['Type']);
     const ofxChargeType = amount > 0 ? 'CREDIT' : 'DEBIT';
     const ofxFeeType = fees > 0 ? 'CREDIT' : 'DEBIT';
+    const chargeFitId = resolvedId ? id : `C${id}`;
+    const feeFitId = resolvedId ? `${id}-fee` : `F${id}`;
 
     lines.push(
       '\t\t\t\t\t\t<STMTTRN>\n',
       `\t\t\t\t\t\t\t<TRNTYPE>${ofxChargeType}\n`,
       `\t\t\t\t\t\t\t<DTPOSTED>${formatDate(date)}\n`,
       `\t\t\t\t\t\t\t<TRNAMT>${amount.toFixed(2)}\n`,
-      `\t\t\t\t\t\t\t<FITID>C${id}\n`,
-      `\t\t\t\t\t\t\t<CHECKNUM>C${id}\n`,
+      `\t\t\t\t\t\t\t<FITID>${chargeFitId}\n`,
+      `\t\t\t\t\t\t\t<CHECKNUM>${chargeFitId}\n`,
       `\t\t\t\t\t\t\t<MEMO>${memo}\n`,
       '\t\t\t\t\t\t</STMTTRN>\n'
     );
@@ -182,8 +202,8 @@ function generateOfx(data, meta) {
         `\t\t\t\t\t\t\t<TRNTYPE>${ofxFeeType}\n`,
         `\t\t\t\t\t\t\t<DTPOSTED>${formatDate(date)}\n`,
         `\t\t\t\t\t\t\t<TRNAMT>${fees.toFixed(2)}\n`,
-        `\t\t\t\t\t\t\t<FITID>F${id}\n`,
-        `\t\t\t\t\t\t\t<CHECKNUM>F${id}\n`,
+        `\t\t\t\t\t\t\t<FITID>${feeFitId}\n`,
+        `\t\t\t\t\t\t\t<CHECKNUM>${feeFitId}\n`,
         `\t\t\t\t\t\t\t<MEMO>Stripe Fees ${type} (${memo})\n`,
         '\t\t\t\t\t\t</STMTTRN>\n'
       );
