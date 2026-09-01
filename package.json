@@ -1,6 +1,6 @@
 {
   "name": "@jotaodiceu/stripe2ofx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command-line utility that converts Stripe balance history and transfer exports (CSV) to the OFX file format used by accounting software for statement imports.",
   "repository": {
     "type": "git",
